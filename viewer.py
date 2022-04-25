@@ -36,7 +36,7 @@ class Truck:
 
     def move(self, turn, x, y):
         self.movements[turn] = (x, y)
-        if not (self.x - 1 <= x <= self.x + 1 and self.y - 1 <= y <= self.y + 1):
+        if abs(self.x - x) + abs(self.y - y) > 1:
             print(
                 f"invalid move, too far away, turn {turn} to {x} {y} from {self.x} {self.y}"
             )
