@@ -12,7 +12,7 @@ under Creative Commons Zero (CC0) http://creativecommons.org/publicdomain/zero/1
 
 ### Viewer installation
 
-In a folder, copy `viewer.py` from this repository.
+In a folder, copy `viewer.py` and `requirements.txt` from this repository.
 
 Create a virtual environment (with bash/zsh on Linux/Mac or PowerShell on Windows):
 
@@ -30,6 +30,12 @@ source venv/bin/activate  # For Linux/Mac
 ```shell
 Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope CurrentUser
 .\venv\Script\Activate.ps1  # For Windows
+```
+
+Install dependencies:
+
+```shell
+python -m pip install -r requirements.txt
 ```
 
 Then use the viewer:
