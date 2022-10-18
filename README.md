@@ -14,6 +14,8 @@ under Creative Commons Zero (CC0) http://creativecommons.org/publicdomain/zero/1
 
 In a folder, copy `viewer.py` and `requirements.txt` from this repository.
 
+Make sure Python 3 is installed on your PC (Use application store or package manager of your OS).
+
 Create a virtual environment (with bash/zsh on Linux/Mac or PowerShell on Windows):
 
 ```shell
@@ -24,12 +26,14 @@ python3.10 -m venv venv
 Activate the virtual environment
 
 ```shell
-source venv/bin/activate  # For Linux/Mac
+# For Linux/Mac
+source venv/bin/activate
 ```
 
 ```shell
+# For Windows
 Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope CurrentUser
-.\venv\Script\Activate.ps1  # For Windows
+.\venv\Scripts\Activate.ps1
 ```
 
 Install dependencies:
