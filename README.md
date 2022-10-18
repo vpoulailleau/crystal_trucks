@@ -42,6 +42,8 @@ Install dependencies:
 python -m pip install -r requirements.txt
 ```
 
+For Windows, download missing DLL file: https://stackoverflow.com/a/71028328/12199445.
+
 Then use the viewer:
 
 ```shell
