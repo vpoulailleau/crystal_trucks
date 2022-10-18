@@ -8,7 +8,37 @@ crystals the fastest way.
 The images are from https://www.kenney.nl,
 under Creative Commons Zero (CC0) http://creativecommons.org/publicdomain/zero/1.0/.
 
-## Command line interface
+## Viewer
+
+### Viewer installation
+
+In a folder, copy `viewer.py` from this repository.
+
+Create a virtual environment (with bash/zsh on Linux/Mac or PowerShell on Windows):
+
+```shell
+cd directory_containing_viewer_py
+python3.10 -m venv venv
+```
+
+Activate the virtual environment
+
+```shell
+source venv/bin/activate  # For Linux/Mac
+```
+
+```shell
+Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope CurrentUser
+.\venv\Script\Activate.ps1  # For Windows
+```
+
+Then use the viewer:
+
+```shell
+python viewer.py --serial-port COM1
+```
+
+### Command line interface
 
 ```
 usage: viewer.py [-h] (-i PATH | -s COM1)
@@ -23,7 +53,7 @@ optional arguments:
                         name of the serial device (115200 8N1)
 ```
 
-## Viewer keys
+### Viewer keys
 
 - Left arrow: go back one turn earlier in time
 - Right arrow: go one turn later in time
