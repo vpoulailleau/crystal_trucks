@@ -36,13 +36,13 @@ Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope CurrentUser
 .\venv\Scripts\Activate.ps1
 ```
 
+For Windows, download missing DLL file: https://www.dll-files.com/geos_c.dll.html. Copy geos_c.dll into C:\Windows\System32.
+
 Install dependencies:
 
 ```shell
 python -m pip install -r requirements.txt
 ```
-
-For Windows, download missing DLL file: https://www.dll-files.com/geos_c.dll.html. Copy geos_c.dll into C:\Windows\System32.
 
 Then use the viewer:
 
