@@ -36,10 +36,6 @@ class Truck:
 
     def move(self, turn, x, y):
         self.movements[turn] = (x, y)
-        if abs(self.x - x) + abs(self.y - y) > 1:
-            print(
-                f"invalid move, too far away, turn {turn} to {x} {y} from {self.x} {self.y}"
-            )
         if self.x < x:
             self.x += 1
         elif self.x > x:
@@ -311,7 +307,12 @@ class CrystalsVsTrucksGameView(arcade.View):
             if not 0 <= y < self.commands.grid_height:
                 report_error("invalid move command, invalid y", command, args)
                 return
-            self.trucks[truck_id].move(turn, x, y)
+            truck = self.trucks[truck_id]
+            if abs(truck.x - x) + abs(truck.y - y) > 1:
+                report_error(
+                    f"invalid move, too far away, turn {turn} to {x} {y} from {truck.x} {truck.y}"
+                )
+            truck.move(turn, x, y)
         elif command == "DIG":
             if len(args) != 3:
                 report_error(
