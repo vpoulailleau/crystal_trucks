@@ -12,7 +12,7 @@ under Creative Commons Zero (CC0) http://creativecommons.org/publicdomain/zero/1
 
 ### Viewer installation
 
-In a folder, copy `viewer.py` and `requirements.txt` from this repository.
+In a folder, copy `viewer.py`, the `images` folder and `requirements.txt` from this repository.
 
 Make sure Python 3 is installed on your PC (Use application store or package manager of your OS).
 
