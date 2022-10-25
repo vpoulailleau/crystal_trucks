@@ -97,7 +97,8 @@ class CommandContent:
             else:
                 parts = line.split()
                 if len(parts) != 5 or parts[1] not in ("DIG", "MOVE"):
-                    print("ignore", line, end="")
+                    if line:
+                        print("ignore", line)
                 else:
                     self.commands.append(parts)
 
