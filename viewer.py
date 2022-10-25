@@ -72,6 +72,85 @@ class Truck:
         return pos_x, pos_y
 
 
+class CommandContent:
+    def _read_config(self, lines):
+        in_grid = False
+        for line in lines:
+            line = line.rstrip()
+            if in_grid and not line.startswith("### End Grid ###"):
+                self.grid.append([])
+                for char in line:
+                    if char == " ":
+                        self.grid[-1].append(0)
+                    else:
+                        self.grid[-1].append(int(char))
+                for _ in range(len(self.grid[-1]), self.grid_width):
+                    self.grid[-1].append(0)
+            elif line.startswith("### End Grid ###"):
+                in_grid = False
+            elif line.startswith("trucks: "):
+                self.nb_trucks = int(line.split()[-1])
+            elif line.startswith("width: "):
+                self.grid_width = int(line.split()[-1])
+                self.cell_width = SCREEN_WIDTH // self.grid_width
+            elif line.startswith("height: "):
+                self.grid_height = int(line.split()[-1])
+                self.cell_height = SCREEN_HEIGHT // self.grid_height
+            elif line.startswith("### Grid ###"):
+                in_grid = True
+            else:
+                parts = line.split()
+                if len(parts) != 5 or parts[1] not in ("DIG", "MOVE"):
+                    print("ignore", line, end="")
+                else:
+                    self.commands.append(parts)
+
+    def __init__(self, path=None, serial_port=None):
+        if path is None and serial_port is None:
+            print("Either file path or serial port must be configured")
+        self.commands = []
+        self.nb_trucks = 0
+        self.grid_width = 0
+        self.grid_height = 0
+        self.grid = []
+        self.cell_width = 0
+        self.cell_height = 0
+        self._max_command_turn = None
+
+        lines = []
+        if path is not None:
+            with open(path, encoding="utf-8") as file:
+                lines = list(file)
+        if serial_port is not None:
+            print("waiting for data on", serial_port)
+            filename = datetime.datetime.now().strftime("%Y_%m_%d__%H_%M_%S")
+            filename = f"serial_{filename}.txt"
+            with serial.Serial(serial_port, 115200, timeout=1) as ser, open(
+                filename, "w", encoding="utf-8"
+            ) as log:
+                nb_empty_lines = 0
+                while True:
+                    if nb_empty_lines > 10:
+                        break
+                    line = ser.readline().decode("utf-8").rstrip()
+                    if line:
+                        print(line)
+                        log.write(line)
+                        log.write("\r\n")
+                        lines.append(line)
+                        nb_empty_lines = 0
+                    else:
+                        nb_empty_lines += 1
+        self._read_config(lines)
+
+    @property
+    def max_command_turn(self):
+        if self._max_command_turn is None:
+            last_command = max(self.commands, key=lambda c: int(c[0]))
+            self._max_command_turn = int(last_command[0])
+        return self._max_command_turn
+
+
 class CrystalsVsTrucksGameView(arcade.View):
     def __init__(self, window=None, commands=None):
         super().__init__(window)
@@ -126,13 +205,14 @@ class CrystalsVsTrucksGameView(arcade.View):
             self.truck_list.append(truck_sprite)
 
     def setup(self):
-        """Set up the game variables. Call to re-start the game."""
+        """Set up the game variables.
+
+        Call to re-start the game.
+        """
         self.compute_sprites()
 
     def on_draw(self):
-        """
-        Render the screen.
-        """
+        """Render the screen."""
 
         # This command should happen before we start drawing. It will clear
         # the screen to the background color, and erase what we drew last frame.
@@ -152,10 +232,9 @@ class CrystalsVsTrucksGameView(arcade.View):
         )
 
     def on_update(self, delta_time):
-        """
-        All the logic to move, and the game logic goes here.
-        Normally, you'll call update() on the sprite lists that
-        need it.
+        """All the logic to move, and the game logic goes here.
+
+        Normally, you'll call update() on the sprite lists that need it.
         """
 
         def extract_time(command):
@@ -190,6 +269,10 @@ class CrystalsVsTrucksGameView(arcade.View):
         self.compute_sprites()
 
     def interpret(self, turn, command, args):
+        def report_error(*args, **kwargs):
+            if turn == int(self.clock):
+                print(*args, **kwargs)
+
         # print(turn, command, args)
         if args:
             truck_id = args[0]
@@ -247,9 +330,7 @@ class CrystalsVsTrucksGameView(arcade.View):
             print("invalid command", command, args)
 
     def on_key_press(self, key, key_modifiers):
-        """
-        Called whenever a key on the keyboard is pressed.
-        """
+        """Called whenever a key on the keyboard is pressed."""
         if key == arcade.key.LEFT:
             self.clock = max(0, int(self.clock - 1))
         elif key == arcade.key.RIGHT:
@@ -260,6 +341,10 @@ class CrystalsVsTrucksGameView(arcade.View):
             self.clock_factor /= 1.1
         elif key == arcade.key.SPACE:
             self.running = not self.running
+
+
+commands = None
+args = None
 
 
 class ScoreView(arcade.View):
@@ -310,91 +395,8 @@ class ScoreView(arcade.View):
         game_view.setup()
 
 
-class CommandContent:
-    def __init__(self, path=None, serial_port=None):
-        if path is None and serial_port is None:
-            print("Either file path or serial port must be configured")
-        self.commands = []
-        self.nb_trucks = 0
-        self.grid_width = 0
-        self.grid_height = 0
-        self.grid = []
-        self.cell_width = 0
-        self.cell_height = 0
-        self._max_command_turn = None
-
-        lines = []
-        if path is not None:
-            with open(path, encoding="utf-8") as file:
-                lines = list(file)
-        if serial_port is not None:
-            print("waiting for data on", serial_port)
-            filename = datetime.datetime.now().strftime("%Y_%m_%d__%H_%M_%S")
-            filename = f"serial_{filename}.txt"
-            with serial.Serial(serial_port, 115200, timeout=1) as ser, open(
-                filename, "w", encoding="utf-8"
-            ) as log:
-                nb_empty_lines = 0
-                while True:
-                    if nb_empty_lines > 10:
-                        break
-                    line = ser.readline().decode("utf-8").rstrip()
-                    if line:
-                        print(line)
-                        log.write(line)
-                        log.write("\r\n")
-                        lines.append(line)
-                        nb_empty_lines = 0
-                    else:
-                        nb_empty_lines += 1
-        self._read_config(lines)
-
-    def _read_config(self, lines):
-        in_grid = False
-        for line in lines:
-            line = line.rstrip()
-            if in_grid and not line.startswith("### End Grid ###"):
-                self.grid.append([])
-                for char in line:
-                    if char == " ":
-                        self.grid[-1].append(0)
-                    else:
-                        self.grid[-1].append(int(char))
-                for _ in range(len(self.grid[-1]), self.grid_width):
-                    self.grid[-1].append(0)
-            elif line.startswith("### End Grid ###"):
-                in_grid = False
-            elif line.startswith("trucks: "):
-                self.nb_trucks = int(line.split()[-1])
-            elif line.startswith("width: "):
-                self.grid_width = int(line.split()[-1])
-                self.cell_width = SCREEN_WIDTH // self.grid_width
-            elif line.startswith("height: "):
-                self.grid_height = int(line.split()[-1])
-                self.cell_height = SCREEN_HEIGHT // self.grid_height
-            elif line.startswith("### Grid ###"):
-                in_grid = True
-            else:
-                parts = line.split()
-                if len(parts) != 5 or parts[1] not in ("DIG", "MOVE"):
-                    print("ignore", line, end="")
-                else:
-                    self.commands.append(parts)
-
-    @property
-    def max_command_turn(self):
-        if self._max_command_turn is None:
-            last_command = max(self.commands, key=lambda c: int(c[0]))
-            self._max_command_turn = int(last_command[0])
-        return self._max_command_turn
-
-
-commands = None
-args = None
-
-
 def main():
-    """Main function"""
+    """Main function."""
     global commands, args
     parser = argparse.ArgumentParser(description="Viewer for crystals vs trucks.")
     input_parser = parser.add_mutually_exclusive_group(required=True)
