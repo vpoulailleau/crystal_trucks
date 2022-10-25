@@ -161,6 +161,7 @@ class CrystalsVsTrucksGameView(arcade.View):
         self.clock_factor = 1
         self.running = True
         self.commands_history = {}
+        self.commands_seen = set()
 
         arcade.set_background_color(arcade.color.AMAZON)
 
@@ -270,64 +271,72 @@ class CrystalsVsTrucksGameView(arcade.View):
 
     def interpret(self, turn, command, args):
         def report_error(*args, **kwargs):
-            if turn == int(self.clock):
+            if new_command:
                 print(*args, **kwargs)
 
         # print(turn, command, args)
+        new_command = False
+        if (turn, command, tuple(args)) not in self.commands_seen:
+            new_command = True
+            self.commands_seen.add((turn, command, tuple(args)))
+
         if args:
             truck_id = args[0]
             history = self.commands_history.get((turn, truck_id))
             if history is not None and history != (command, args):
-                print(
+                report_error(
                     "invalid command, the truck already did an action at turn",
                     turn,
                     command,
                     args,
                 )
-                # print(self.commands_history)
                 return
             if not (0 <= int(truck_id) < self.commands.nb_trucks):
-                print("invalid truck ID", command, args)
+                report_error("invalid truck ID", command, args)
                 return
             self.commands_history[(turn, truck_id)] = (command, args)
         if command == "MOVE":
             if len(args) != 3:
-                print("invalid move command, must have 3 arguments", command, args)
+                report_error(
+                    "invalid move command, must have 3 arguments", command, args
+                )
                 return
             truck_id, x, y = (int(a) for a in args)
             if not 0 <= truck_id < self.commands.nb_trucks:
-                print("invalid move command, invalid truck id", command, args)
+                report_error("invalid move command, invalid truck id", command, args)
                 return
             if not 0 <= x < self.commands.grid_width:
-                print("invalid move command, invalid x", command, args)
+                report_error("invalid move command, invalid x", command, args)
                 return
             if not 0 <= y < self.commands.grid_height:
-                print("invalid move command, invalid y", command, args)
+                report_error("invalid move command, invalid y", command, args)
                 return
             self.trucks[truck_id].move(turn, x, y)
         elif command == "DIG":
             if len(args) != 3:
-                print("invalid dig command, must have 3 arguments", command, args)
+                report_error(
+                    "invalid dig command, must have 3 arguments", command, args
+                )
                 return
             truck_id, x, y = (int(a) for a in args)
             if not 0 <= truck_id < self.commands.nb_trucks:
-                print("invalid dig command, invalid truck id", command, args)
+                report_error("invalid dig command, invalid truck id", command, args)
                 return
             if not 0 <= x < self.commands.grid_width:
-                print("invalid dig command, invalid x", command, args)
+                report_error("invalid dig command, invalid x", command, args)
                 return
             if not 0 <= y < self.commands.grid_height:
-                print("invalid dig command, invalid y", command, args)
+                report_error("invalid dig command, invalid y", command, args)
                 return
             truck = self.trucks[truck_id]
             truck.position_at(self.clock)
             if x != truck.x or y != truck.y:
-                print("invalid dig command, cannot dig on non current position")
-                print(f"    {truck_id=} {truck.x=} {truck.y=} dig at {x=} {y=}")
+                report_error("invalid dig command, cannot dig on non current position")
+                report_error(f"    {truck_id=} {truck.x=} {truck.y=} dig at {x=} {y=}")
                 return
             self.grid[y][x] = max(0, self.grid[y][x] - 1)
         else:
-            print("invalid command", command, args)
+            report_error("invalid command", command, args)
 
     def on_key_press(self, key, key_modifiers):
         """Called whenever a key on the keyboard is pressed."""
