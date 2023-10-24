@@ -143,8 +143,11 @@ class CommandContent:
     @property
     def max_command_turn(self):
         if self._max_command_turn is None:
-            last_command = max(self.commands, key=lambda c: int(c[0]))
-            self._max_command_turn = int(last_command[0])
+            if self.commands:
+                last_command = max(self.commands, key=lambda c: int(c[0]))
+                self._max_command_turn = int(last_command[0])
+            else:
+                self._max_command_turn = 0
         return self._max_command_turn
 
 
