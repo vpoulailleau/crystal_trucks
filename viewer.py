@@ -94,6 +94,8 @@ class CommandContent:
                 self.cell_height = SCREEN_HEIGHT // self.grid_height
             elif line.startswith("### Grid ###"):
                 in_grid = True
+            elif line == "Start!":
+                pass
             else:
                 parts = line.split()
                 if len(parts) != 5 or parts[1] not in ("DIG", "MOVE"):
