@@ -3,7 +3,6 @@ import copy
 import datetime
 
 import arcade
-import pyglet
 import serial
 
 # TODO faire une interface graphique pour choisir le port COM
@@ -442,11 +441,9 @@ def main():
     args = parser.parse_args()
     commands = CommandContent(path=args.input, serial_port=args.serial_port)
 
-    screen = pyglet.canvas.Display().get_screens()[0]
-    window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
-    left = screen.width // 2 - SCREEN_WIDTH // 2
-    top = screen.height // 2 - SCREEN_HEIGHT // 2
-    window.set_location(left, top)
+    window = arcade.Window(
+        SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE, center_window=True
+    )
 
     game_view = CrystalsVsTrucksGameView(commands=commands)
     window.show_view(game_view)
